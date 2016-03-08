@@ -24,6 +24,15 @@ var World = function (width, height) {
 Object.defineProperties(World, {
     FRICTION : {
         value : 0.925
+    },
+
+    MINIMAP : {
+        value : Object.freeze({
+            WIDTH      : 150,
+            HEIGHT     : 100,
+            SCALE      : 0.1,
+            FILL_STYLE : "#192427"
+        })
     }
 });
 World.prototype = Object.freeze(Object.create(World.prototype, {
@@ -65,6 +74,52 @@ World.prototype = Object.freeze(Object.create(World.prototype, {
     },
 
     /**
+     * Handles collisions between game objects
+     */
+    handleCollisions : {
+        value : function () {
+            for (var i = this.gameObjects.length - 1; i >= 0; i--) {
+                var cur = this.gameObjects[i];
+
+                // Skip over certain objects for collision detection because
+                // other objects will check against them later
+                if (!cur || !(cur instanceof app.gameobject.LivingObject)) {
+                    continue;
+                }
+
+                var possibleCollisions = [];
+                this.quadtree.retrieve(possibleCollisions, cur);
+
+                for (var j = 0; j < possibleCollisions.length; j++) {
+                    var obj0 = this.gameObjects[i];
+                    var obj1 = possibleCollisions[j];
+
+                    // One of the objects was removed upon collision, so
+                    // continue through the loop because it cannot be used, or
+                    // if both objects have a fixed location, ignore their
+                    // collisions
+                    if (!obj0 || !obj1 ||
+                        (obj0.fixed && obj1.fixed) ||
+                        (obj0 === obj1)) {
+
+                        continue;
+                    }
+
+                    // Check collisions if one of the objects is solid
+                    if (obj0.solid || obj1.solid) {
+                        var colliding = obj0.handleCollision(obj1);
+
+                        if (colliding) {
+                            obj0.resolveCollision(obj1);
+                            obj1.resolveCollision(obj0);
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    /**
      * Updates the world and all game objects in it
      */
     update : {
@@ -86,6 +141,8 @@ World.prototype = Object.freeze(Object.create(World.prototype, {
             if (this.player) {
                 this.camera.follow(this.player);
             }
+
+            this.handleCollisions();
         }
     },
 
@@ -93,6 +150,13 @@ World.prototype = Object.freeze(Object.create(World.prototype, {
      * Draws the world and all game objects in it
      */
     draw : {
+        value : function (ctx) {
+            this.drawGameObjects(ctx);
+            this.drawHUD(ctx);
+        }
+    },
+
+    drawGameObjects : {
         value : function (ctx) {
             ctx.save();
 
@@ -133,6 +197,62 @@ World.prototype = Object.freeze(Object.create(World.prototype, {
                     if (app.DEBUG) {
                         obj.drawDebug(ctx);
                     }
+
+                    ctx.restore();
+                }
+            }
+
+            ctx.restore();
+        }
+    },
+
+    drawHUD : {
+        value : function (ctx) {
+            ctx.save();
+
+            var cameraPos    = this.camera.position;
+            var screenWidth  = ctx.canvas.width;
+            var screenHeight = ctx.canvas.height;
+            var offset       = new app.Vec2(
+                World.MINIMAP.WIDTH  * 0.5,
+                World.MINIMAP.HEIGHT * 0.5
+            );
+
+            var screenDiagonalSquared =
+                screenWidth  * screenWidth +
+                screenHeight * screenHeight;
+
+            ctx.translate(screenWidth - World.MINIMAP.WIDTH, 0);
+            ctx.beginPath();
+            ctx.rect(0, 0, World.MINIMAP.WIDTH, World.MINIMAP.HEIGHT);
+            ctx.clip();
+
+            ctx.fillStyle = World.MINIMAP.FILL_STYLE;
+            ctx.strokeStyle = "rgb(100, 100, 100)";
+            ctx.globalAlpha = 0.9;
+            ctx.beginPath();
+            ctx.rect(0, 0, World.MINIMAP.WIDTH, World.MINIMAP.HEIGHT);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.translate(offset.x, offset.y);
+
+            ctx.scale(World.MINIMAP.SCALE, World.MINIMAP.SCALE);
+
+            for (var i = 0; i < this.gameObjects.length; i++) {
+                var obj = this.gameObjects[i];
+                var objOffset = new app.Vec2(
+                    obj.position.x - cameraPos.x,
+                    obj.position.y - cameraPos.y
+                );
+                var distanceSquared = objOffset.getMagnitudeSquared();
+
+                // If the game object is too far away, don't draw it!
+                if (distanceSquared <= screenDiagonalSquared * 1.4) {
+                    ctx.save();
+
+                    ctx.translate(objOffset.x, objOffset.y);
+                    obj.drawOnMinimap(ctx);
 
                     ctx.restore();
                 }

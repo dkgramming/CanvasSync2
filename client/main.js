@@ -7,11 +7,13 @@ app.main = {
     network        : undefined,
     currentScreen  : undefined,
     pauseScreen    : undefined,
+    paused         : false,
     prevUpdateTime : -1,
     animationId    : 0,
 
     init : function () {
-        app.DEBUG = false;
+        app.DEBUG     = false;
+        app.CAN_PAUSE = true;
 
         this.keyboard = app.keyboard;
 
@@ -61,6 +63,13 @@ app.main = {
             app.DEBUG = !app.DEBUG;
         }
 
+        // Shift + P -- Disable pause screen
+        if (this.keyboard.isPressed(this.keyboard.SHIFT) &&
+            this.keyboard.justPressed(this.keyboard.P)) {
+
+            app.CAN_PAUSE = false;
+        }
+
         this.keyboard.update();
     },
 
@@ -68,16 +77,22 @@ app.main = {
      * Pauses the game
      */
     pause : function () {
-        // Stop the animation loop
-        cancelAnimationFrame(this.animationID);
+        if (app.CAN_PAUSE) {
+            this.paused = true;
 
-        this.pauseScreen.draw(this.pauseScreen.canvas.getContext("2d"));
+            // Stop the animation loop
+            cancelAnimationFrame(this.animationID);
+
+            this.pauseScreen.draw(this.pauseScreen.canvas.getContext("2d"));
+        }
     },
 
     /**
      * Resumes the game
      */
     resume : function () {
+        this.paused = false;
+
         // Stop the animation loop, just in case it's running
         cancelAnimationFrame(this.animationID);
 

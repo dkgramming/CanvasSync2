@@ -41,6 +41,15 @@ PauseScreen.prototype = Object.freeze(Object.create(Screen.prototype, {
                 this.canvas.width * 0.5,
                 this.canvas.height * 0.5
             );
+            
+            
+            ctx.font = "18px Ubuntu";
+            
+            ctx.fillText(
+                "(Press Shift + P to disable Pause Screen)",
+                this.canvas.width * 0.5,
+                this.canvas.height * 0.5 + 30
+            );
 
             ctx.restore();
         }
@@ -58,6 +67,47 @@ var GameScreen = function (canvas) {
     this.world.parallaxBg.img = app.getImage(app.IMAGES.bgTile);
     this.world.player = app.network.localClient.gameObject;
     this.world.addGameObject(this.world.player);
+
+    var Block = app.gameobject.FullBlock;
+    var wallSize = 10;
+    var blockSize = 128;
+    var offset = -(wallSize * 0.5 - 1) * blockSize;
+
+    // Line the top
+    for (var i = 0; i < 9; i++) {
+        var newBlock = new Block();
+        newBlock.position.x = blockSize * i + offset;
+        newBlock.position.y = offset;
+
+        this.world.addGameObject(newBlock);
+    }
+
+    // Line the bottom
+    for (var i = 0; i < 9; i++) {
+        var newBlock = new Block();
+        newBlock.position.x = blockSize * i + offset;
+        newBlock.position.y = -offset;
+
+        this.world.addGameObject(newBlock);
+    }
+
+    // Line the left
+    for (var i = 1; i < 8; i++) {
+        var newBlock = new Block();
+        newBlock.position.x = offset;
+        newBlock.position.y = blockSize * i + offset;
+
+        this.world.addGameObject(newBlock);
+    }
+
+    // Line the right
+    for (var i = 1; i < 8; i++) {
+        var newBlock = new Block();
+        newBlock.position.x = -offset;
+        newBlock.position.y = blockSize * i + offset;
+
+        this.world.addGameObject(newBlock);
+    }
 };
 GameScreen.prototype = Object.freeze(Object.create(Screen.prototype, {
     update : {

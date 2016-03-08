@@ -32,6 +32,9 @@ app.network = {
         this.localClient = new app.network.LocalClient(id, data);
         this.clients[id] = this.localClient;
 
+        this.localClient.gameObject.position.x = data.x;
+        this.localClient.gameObject.position.y = data.y;
+
         this.connected = true;
 
         $(app.network).trigger(

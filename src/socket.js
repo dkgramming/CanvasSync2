@@ -16,8 +16,8 @@ var configureSockets = function (socketio) {
             var client = {
                 user     : data.user,
                 id       : clientCounter,
-                x        : 0,
-                y        : 0,
+                x        : Math.random() * 200 - 100,
+                y        : Math.random() * 200 - 100,
                 rotation : -Math.PI * 0.5
             };
             clients[clientCounter] = client;
@@ -46,18 +46,20 @@ var configureSockets = function (socketio) {
         });
 
         socket.on('updateOther', function (data) {
-            var updateData = {
-                id       : id,
-                x        : data.x,
-                y        : data.y,
-                rotation : data.rotation
-            };
+            if (clients[id]) {
+                var updateData = {
+                    id       : id,
+                    x        : data.x,
+                    y        : data.y,
+                    rotation : data.rotation
+                };
 
-            clients[id].x        = data.x;
-            clients[id].y        = data.y;
-            clients[id].rotation = data.rotation;
+                clients[id].x        = data.x;
+                clients[id].y        = data.y;
+                clients[id].rotation = data.rotation;
 
-            socket.broadcast.emit('updateOther', updateData);
+                socket.broadcast.emit('updateOther', updateData);
+            }
         });
 
         // Make the new client load all previous client data (for those who are

@@ -18,6 +18,7 @@ var fileNames = [
     '/loader.js',
     '/assets.js',
     '/gameobjects.js',
+    '/boundaries.js',
     '/quadtree.js',
     '/keyboard.js',
     '/screen.js',
@@ -34,6 +35,7 @@ var fileNames = [
     
     // Media
     '/media/BG-tile1.png',
+    '/media/BlockFull.png',
     '/media/Ship.png',
     '/media/OtherShip.png',
     

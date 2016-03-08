@@ -46,7 +46,11 @@ Object.defineProperties(Player, {
     },
 
     POSITION_UPDATE_DISTANCE : {
-        value : 1
+        value : 0.5
+    },
+
+    MINIMAP_FILL_STYLE : {
+        value : "#86c8d3"
     }
 });
 Player.prototype = Object.freeze(Object.create(app.gameobject.LivingObject.prototype, {
@@ -71,15 +75,43 @@ Player.prototype = Object.freeze(Object.create(app.gameobject.LivingObject.proto
                 if (distanceSquaredSinceUpdate >=
                     maxUpdateDistance * maxUpdateDistance) {
 
+                    var predictedVelocity = this.velocity.clone();
+                    predictedVelocity.add(
+                        this.acceleration.clone().multiply(3)
+                    );
+
+                    var predictedPos = this.position.clone();
+                    predictedPos.add(
+                        predictedVelocity.multiply(3)
+                    );
+
                     app.network.socket.emit('updateOther', {
-                        x        : this.position.x,
-                        y        : this.position.y,
+                        x        : predictedPos.x,
+                        y        : predictedPos.y,
                         rotation : this.getRotation()
                     });
 
                     this.lastSentPosition = this.position.clone();
                 }
             }
+        }
+    },
+
+    drawOnMinimap : {
+        value : function (ctx) {
+            var w = this.getWidth();
+            var h = this.getHeight();
+            var offsetX = Math.round(-w * 0.5);
+            var offsetY = Math.round(-h * 0.5);
+            var displayWidth = Math.round(w);
+            var displayHeight = Math.round(h);
+
+            ctx.save();
+
+            ctx.fillStyle = Player.MINIMAP_FILL_STYLE;
+            ctx.fillRect(offsetX, offsetY, displayWidth, displayHeight);
+
+            ctx.restore();
         }
     }
 }));
@@ -105,18 +137,21 @@ var ClientPlayer = function () {
     this.defaultState.addFrame(frameObj);
     this.addState(app.gameobject.GameObject.STATE.DEFAULT, this.defaultState);
 
-
     this.rotate(-Math.PI * 0.5);
 
     this.desiredPosition = new app.Vec2();
 };
 Object.defineProperties(ClientPlayer, {
     ARRIVAL_SLOWING_RADIUS : {
-        value : 250
+        value : 200
     },
 
     MIN_ARRIVAL_RADIUS : {
-        value : 10
+        value : 8
+    },
+
+    MINIMAP_FILL_STYLE : {
+        value : "#06c833"
     }
 });
 ClientPlayer.prototype = Object.freeze(Object.create(
@@ -158,7 +193,7 @@ ClientPlayer.prototype = Object.freeze(Object.create(
 
                 if (distanceSquared < slowingRadius * slowingRadius) {
                     desiredVelocity.multiply(
-                        app.world.World.FRICTION *
+                        app.world.World.FRICTION * app.world.World.FRICTION *
                         distanceSquared / (slowingRadius * slowingRadius)
                     );
                 }
@@ -169,6 +204,24 @@ ClientPlayer.prototype = Object.freeze(Object.create(
             } else {
                 this.velocity.multiply(app.world.World.FRICTION);
             }
+        }
+    },
+
+    drawOnMinimap : {
+        value : function (ctx) {
+            var w = this.getWidth();
+            var h = this.getHeight();
+            var offsetX = Math.round(-w * 0.5);
+            var offsetY = Math.round(-h * 0.5);
+            var displayWidth = Math.round(w);
+            var displayHeight = Math.round(h);
+
+            ctx.save();
+
+            ctx.fillStyle = ClientPlayer.MINIMAP_FILL_STYLE;
+            ctx.fillRect(offsetX, offsetY, displayWidth, displayHeight);
+
+            ctx.restore();
         }
     }
 }));

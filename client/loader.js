@@ -15,12 +15,16 @@ window.addEventListener('load', function () {
         app.main.init();
 
         window.onblur = function() {
-            app.main.pause();
+            if (app.CAN_PAUSE) {
+                app.main.pause();
+            }
         };
 
         window.onfocus = function() {
-            app.network.onFocusUpdate();
-            app.main.resume();
+            if (app.main.paused) {
+                app.network.onFocusUpdate();
+                app.main.resume();
+            }
         };
 	});
 
