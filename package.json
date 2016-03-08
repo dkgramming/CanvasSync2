@@ -1,0 +1,19 @@
+{
+  "name": "canvas-sync-2",
+  "version": "0.0.0",
+  "description": "The second assigment for syncing canvases on a multi-user application.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./src/app.js",
+    "pretest": "jshint ./src",
+    "test": "echo \"Tests complete\""
+  },
+  "author": "Hector Pineiro II",
+  "license": "ISC",
+  "devDependencies": {
+    "jshint": "^2.9.1"
+  },
+  "dependencies": {
+    "socketio": "^1.0.0"
+  }
+}

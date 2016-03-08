@@ -1,0 +1,19 @@
+@font-face {
+    font-family: "Ubuntu";
+    src: url("font/Ubuntu-Regular.ttf");
+}
+
+html {
+    background-color: black;
+}
+
+#game-canvas {
+    display: block;
+    margin: auto;
+}
+
+#font-load-div {
+    font-family: "Ubuntu";
+    position: absolute;
+    left: -100%;
+}
