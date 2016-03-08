@@ -21,6 +21,8 @@ window.addEventListener('load', function () {
         };
 
         window.onfocus = function() {
+            app.main.onFocus();
+        
             if (app.main.paused) {
                 app.network.onFocusUpdate();
                 app.main.resume();

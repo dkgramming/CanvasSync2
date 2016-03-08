@@ -96,12 +96,17 @@ app.main = {
         // Stop the animation loop, just in case it's running
         cancelAnimationFrame(this.animationID);
 
+        // Restart the loop
+	 	this.animationID = requestAnimationFrame(this.update.bind(this));
+    },
+
+    /**
+     * Callback for when the application comes back into focus
+     */
+    onFocus : function () {
         // Reset the previous update time so that "dt" is forced to 0 on the
         // next update
         this.prevUpdateTime = -1;
-
-        // Restart the loop
-	 	this.animationID = requestAnimationFrame(this.update.bind(this));
     }
 
 };
