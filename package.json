@@ -14,6 +14,6 @@
     "jshint": "^2.9.1"
   },
   "dependencies": {
-    "socketio": "^1.0.0"
+    "socket.io": "^1.0.0"
   }
 }
